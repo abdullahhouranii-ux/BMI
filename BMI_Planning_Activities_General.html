@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BMI Planning General</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: sticky stage switcher; one stage panel at a time = Info Card on top, interactive activities with instant feedback below. */
+:root {
+  --bg: #f6f9f9; --paper: #ffffff; --ink: #172a33; --muted: #557079; --line: #d3e0e2;
+  --a: #027f8e; --b: #c77b0f; --c: #4f5db8; --d: #d1492a; --s0: #172a33;
+  --a-soft: #e2f3f4; --b-soft: #fbefdc; --c-soft: #e8eaf8; --d-soft: #fbe6e0; --s0-soft: #e7edef;
+  --good: #2e7d32; --good-soft: #e3f3e4; --bad: #c0392b; --bad-soft: #fbe5e2;
+  --code-bg: #172a33; --code-fg: #f2f6f7; --code-kw: #ffb86b;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible", "Segoe UI", Arial, sans-serif;
+  --mono: "JetBrains Mono", Consolas, "Courier New", monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1c22; --paper: #16262d; --ink: #e6eff1; --muted: #9db3ba; --line: #2b4048;
+  --a: #3cc3d1; --b: #f0aa45; --c: #9aa6f2; --d: #f2805f; --s0: #c9d7db;
+  --a-soft: #143840; --b-soft: #3a2c14; --c-soft: #24284a; --d-soft: #40231b; --s0-soft: #1f3138;
+  --good: #7bd389; --good-soft: #17331d; --bad: #ff8a7a; --bad-soft: #3d1c18;
+  --code-bg: #08131a; --code-fg: #e6eff1; --code-kw: #ffb86b; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0f1c22; --paper: #16262d; --ink: #e6eff1; --muted: #9db3ba; --line: #2b4048;
+  --a: #3cc3d1; --b: #f0aa45; --c: #9aa6f2; --d: #f2805f; --s0: #c9d7db;
+  --a-soft: #143840; --b-soft: #3a2c14; --c-soft: #24284a; --d-soft: #40231b; --s0-soft: #1f3138;
+  --good: #7bd389; --good-soft: #17331d; --bad: #ff8a7a; --bad-soft: #3d1c18;
+  --code-bg: #08131a; --code-fg: #e6eff1; --code-kw: #ffb86b; color-scheme: dark }
+
+body { background: var(--bg); color: var(--ink); font: 17px/1.55 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap { max-width: 880px; margin: 0 auto; padding-block: 20px 56px; display: grid; gap: 20px; }
+h1, h2, h3 { font-family: var(--display); line-height: 1.15; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(1.7rem, 5vw, 2.4rem); font-weight: 800; }
+h2 { font-size: clamp(1.45rem, 4vw, 1.9rem); font-weight: 800; }
+h3 { font-size: 1.12rem; font-weight: 600; }
+p { margin: 0; }
+.eyebrow { font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.intro { display: grid; gap: 8px; } .intro p { max-width: 64ch; color: var(--muted); }
+
+nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 10px;
+  display: flex; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid var(--line); }
+@media (max-width: 640px) { nav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; } nav button { flex: none; } }
+nav button { font: 700 .95rem var(--body); color: var(--ink); padding: 7px 13px; border-radius: 999px; border: 2px solid var(--line);
+  background: var(--paper); cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
+nav button[aria-selected="true"] { border-color: var(--ink); background: var(--ink); color: var(--bg); }
+nav button:focus-visible, .btn:focus-visible, select:focus-visible, .codeline:focus-visible, .ord button:focus-visible, input:focus-visible { outline: 3px solid var(--a); outline-offset: 2px; }
+nav .dot { width: 1.5em; height: 1.5em; border-radius: 50%; display: inline-grid; place-items: center; color: var(--bg); font-size: .8em; }
+nav .done::after { content: "✓"; color: var(--good); font-weight: 800; }
+nav button[aria-selected="true"].done::after { color: var(--bg); }
+
+.panel { --s: var(--a); --soft: var(--a-soft); display: grid; gap: 18px; }
+.panel[data-c="b"] { --s: var(--b); --soft: var(--b-soft); } .panel[data-c="c"] { --s: var(--c); --soft: var(--c-soft); }
+.panel[data-c="d"] { --s: var(--d); --soft: var(--d-soft); } .panel[data-c="s0"] { --s: var(--s0); --soft: var(--s0-soft); }
+.st-head { display: flex; gap: 14px; align-items: center; }
+.badge { flex: none; width: 52px; height: 52px; border-radius: 50%; background: var(--s); color: var(--bg); display: grid; place-items: center; font: 800 1.5rem var(--display); }
+.st-head .eyebrow { color: var(--s); }
+details.info { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 4px 18px; }
+details.info > summary { cursor: pointer; font: 700 1.05rem var(--display); color: var(--s); padding-block: 10px; }
+details.info[open] > summary { border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+.info-body { display: grid; gap: 12px; padding-bottom: 16px; }
+.box { background: var(--soft); border-radius: 12px; padding: 12px 16px; display: grid; gap: 6px; min-width: 0; }
+.box h3 { color: var(--s); font-size: 1.02rem; }
+ul, ol { margin: 0; padding-left: 1.3em; display: grid; gap: 3px; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.ipo { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.ipo > div { border: 2px solid var(--s); border-radius: 12px; padding: 10px 12px; display: grid; gap: 4px; align-content: start; }
+@media (max-width: 560px) { .ipo { grid-template-columns: 1fr; } }
+pre { margin: 0; background: var(--code-bg); color: var(--code-fg); border-radius: 12px; padding: 12px 16px; overflow-x: auto; font: 15px/1.6 var(--mono); }
+code { font-family: var(--mono); font-size: .92em; }
+.kw { color: var(--code-kw); font-weight: 600; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 480px; font-size: .95rem; }
+th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: .76rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.symbols { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.symbols div { border: 1px solid var(--line); border-radius: 12px; padding: 8px; display: grid; gap: 2px; justify-items: center; text-align: center; background: var(--paper); }
+.symbols svg { width: 90px; height: 48px; } .symbols svg * { fill: var(--soft); stroke: var(--s); stroke-width: 3; }
+
+/* activities */
+.act { background: var(--paper); border: 2px solid var(--line); border-radius: 16px; padding: 18px; display: grid; gap: 14px; min-width: 0; }
+.act.all-good { border-color: var(--good); }
+.act-head { display: grid; gap: 4px; }
+.tag { justify-self: start; font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 2px 9px; border-radius: 999px; background: var(--soft); color: var(--s); }
+.act-body { display: grid; gap: 10px; min-width: 0; }
+.rows { display: grid; gap: 8px; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; align-items: center; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); }
+.row .why { grid-column: 1 / -1; font-size: .93rem; }
+select, input[type="number"] { font: 600 1rem var(--body); color: var(--ink); background: var(--paper); border: 2px solid var(--line); border-radius: 8px; padding: 6px 8px; max-width: 100%; }
+input[type="number"] { width: 7.5em; }
+.opts { display: grid; gap: 8px; }
+.opt { display: flex; gap: 10px; align-items: flex-start; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
+.opt input { margin-top: .3em; accent-color: var(--s); }
+.code { background: var(--code-bg); border-radius: 12px; padding: 8px; display: grid; gap: 4px; overflow-x: auto; }
+.codeline { all: unset; box-sizing: border-box; display: flex; gap: 12px; font: 15px/1.5 var(--mono); color: var(--code-fg); padding: 6px 10px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; white-space: pre; }
+.codeline .ln { opacity: .55; }
+.codeline[aria-pressed="true"] { border-color: var(--code-kw); background: rgba(255, 184, 107, .18); }
+.ord { display: grid; gap: 6px; padding: 0; list-style: none; }
+.ord li { display: flex; gap: 10px; align-items: center; padding: 7px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); }
+.ord li .txt { flex: 1; min-width: 0; font-family: var(--mono); font-size: .95rem; overflow-wrap: anywhere; }
+.ord li .num { font-weight: 800; color: var(--muted); width: 1.4em; }
+.ord button { font: 700 1rem var(--body); width: 2.2em; height: 2.2em; flex: none; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; }
+.ord button:disabled { opacity: .35; cursor: default; }
+.ok { border-color: var(--good) !important; background: var(--good-soft) !important; }
+.no { border-color: var(--bad) !important; background: var(--bad-soft) !important; }
+.mark { font-weight: 800; } .ok .mark { color: var(--good); } .no .mark { color: var(--bad); }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.btn { font: 700 1rem var(--body); padding: 10px 18px; border-radius: 10px; border: 2px solid var(--s); background: var(--s); color: var(--bg); cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--s); }
+.result { font-weight: 700; }
+.result.good { color: var(--good); } .result.bad { color: var(--bad); }
+.feedback { border-radius: 12px; padding: 12px 14px; display: grid; gap: 6px; }
+.feedback.good { background: var(--good-soft); } .feedback.bad { background: var(--bad-soft); }
+.next { justify-self: start; }
+.calc-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+.calc-row label { display: grid; gap: 4px; font-weight: 700; font-size: .92rem; }
+.foot { color: var(--muted); font-size: .9rem; }
+@media (prefers-reduced-motion: no-preference) { .feedback, .row .why { animation: pop .25s ease-out; } }
+@keyframes pop { from { transform: translateY(-3px); opacity: .4; } to { transform: none; opacity: 1; } }
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <span class="eyebrow">Grade 7 AI &amp; Technology · Unit 4 Lesson 2 · Planning the BMI calculator · about 30 minutes</span>
+    <h1>BMI Planning Activities · General</h1>
+    <p>Choose your stage. Read the Info Card, then do the activities. Press <b>Check</b> to see what is right and why. You can try again as many times as you need.</p>
+  </header>
+
+  <nav id="stages" role="tablist" aria-label="Lesson stages"></nav>
+
+  <section class="panel" id="starter" data-c="s0" data-label="Starter" data-short="S" role="tabpanel">
+    <div class="st-head"><div class="badge">S</div><div><span class="eyebrow">Starter · Activity 3 · 3 minutes</span><h2>Do you understand the project?</h2></div></div>
+    <p>Last lesson you read the project brief for the BMI calculator. Answer 3 quick questions to check you remember what the program must do.</p>
+    <div class="act" data-act="starter-q1"></div>
+    <div class="act" data-act="starter-q2"></div>
+    <div class="act" data-act="starter-q3"></div>
+  </section>
+
+  <section class="panel" id="station-a" data-c="a" data-label="A · Tracker" data-short="A" role="tabpanel" hidden>
+    <div class="st-head"><div class="badge">A</div><div><span class="eyebrow">Station A · Activity 5</span><h2>The project tracker</h2></div></div>
+    <details class="info" open><summary>Info Card: read this first</summary><div class="info-body">
+      <div class="box"><h3>What is it?</h3><p>A project tracker lists every task in a project, <b>when</b> it will be done, <b>who</b> does it and its <b>status</b> (done, in progress, not started). It helps a team manage its time and see what is left.</p></div>
+      <div class="box"><h3>The 5 stages of the Systems Development Lifecycle (SDLC)</h3><ol>
+        <li><b>Project brief</b>: read what the program must do (the requirements).</li>
+        <li><b>Planning</b>: decompose the problem, draw a flowchart, write pseudocode.</li>
+        <li><b>Programming</b>: write the real code.</li>
+        <li><b>Testing</b>: try the program with test values and fix errors.</li>
+        <li><b>Self-reflection</b>: decide what went well and what to improve.</li></ol></div>
+      <div class="box"><h3>Example: tracker for a temperature converter project</h3><div class="scroll"><table>
+        <thead><tr><th>Stage</th><th>Task</th><th>Who</th><th>When</th><th>Status</th></tr></thead><tbody>
+        <tr><td>Project brief</td><td>List what the converter must do</td><td>Whole team</td><td>Lesson 1</td><td>Done</td></tr>
+        <tr><td>Planning</td><td>Input/Process/Output, flowchart, pseudocode</td><td>Designer + Researcher</td><td>Lesson 2</td><td>In progress</td></tr>
+        <tr><td>Programming</td><td>Write the Python code</td><td>Whole team</td><td>Lesson 3</td><td>Not started</td></tr>
+        <tr><td>Testing</td><td>Test 0 °C, 30 °C and 100 °C</td><td>Presenter</td><td>Lesson 4</td><td>Not started</td></tr>
+        <tr><td>Self-reflection</td><td>Two strengths, one improvement</td><td>Everyone</td><td>Lesson 4</td><td>Not started</td></tr></tbody></table></div></div>
+    </div></details>
+    <div class="act" data-act="a-order"></div>
+  </section>
+
+  <section class="panel" id="station-b" data-c="b" data-label="B · Decomposition" data-short="B" role="tabpanel" hidden>
+    <div class="st-head"><div class="badge">B</div><div><span class="eyebrow">Station B · Activity 6</span><h2>Decomposition</h2></div></div>
+    <details class="info" open><summary>Info Card: read this first</summary><div class="info-body">
+      <div class="box"><h3>What is it?</h3><p><b>Decomposition</b> means breaking a big problem into smaller parts that are easier to understand, build and test. Programmers often split a program into three parts:</p>
+        <ul><li><b>Input</b>: the data that goes into the program (what the user types).</li><li><b>Process</b>: what the program does with the data (calculations and decisions).</li><li><b>Output</b>: the result the program shows.</li></ul></div>
+      <div class="box"><h3>Everyday example: getting ready for a school trip</h3><p>Big task “Get ready for the trip” → pack the bag · bring the signed permission form · charge the phone · arrive by 7:30. Each small task is easy to check off.</p></div>
+      <div class="box"><h3>Program example: temperature converter (°C → °F)</h3><div class="ipo">
+        <div><b>INPUT</b><p>Ask for the temperature in °C.</p><p>Cast it to a decimal (float), because input is text.</p></div>
+        <div><b>PROCESS</b><p>Calculate <code>F = C × 9 ÷ 5 + 32</code></p><p>Decide: is C 30 or more? Then it is hot.</p></div>
+        <div><b>OUTPUT</b><p>Print the temperature in °F.</p><p>Print “It is hot!” or “It is not hot.”</p></div></div></div>
+    </div></details>
+    <div class="act" data-act="b-sort"></div>
+  </section>
+
+  <section class="panel" id="station-c" data-c="c" data-label="C · Flowchart" data-short="C" role="tabpanel" hidden>
+    <div class="st-head"><div class="badge">C</div><div><span class="eyebrow">Station C · Activity 7</span><h2>Flowcharts</h2></div></div>
+    <details class="info" open><summary>Info Card: read this first</summary><div class="info-body">
+      <div class="box"><h3>What is it?</h3><p>A <b>flowchart</b> is a diagram of an algorithm. Each step goes in a symbol and arrows show the order of the steps.</p></div>
+      <div class="symbols">
+        <div><svg viewBox="0 0 100 54" aria-hidden="true"><rect x="4" y="8" width="92" height="38" rx="19"/></svg><b>Terminator</b><span>Start or Stop</span></div>
+        <div><svg viewBox="0 0 100 54" aria-hidden="true"><polygon points="18,8 96,8 82,46 4,46"/></svg><b>Input / Output</b><span>INPUT data or PRINT a result</span></div>
+        <div><svg viewBox="0 0 100 54" aria-hidden="true"><rect x="6" y="8" width="88" height="38"/></svg><b>Process</b><span>A calculation or action</span></div>
+        <div><svg viewBox="0 0 100 54" aria-hidden="true"><polygon points="50,3 96,27 50,51 4,27"/></svg><b>Decision</b><span>A Yes / No question with two exits</span></div>
+      </div>
+      <div class="box"><h3>Rules</h3><ul><li>One Start and one Stop.</li><li>Arrows usually go from top to bottom.</li><li>Every decision has two arrows, labelled <b>Yes</b> and <b>No</b>.</li></ul></div>
+      <div class="box"><h3>Example: temperature converter</h3><p>START → <i>INPUT celsius</i> (input/output) → <i>celsius = FLOAT(celsius)</i> (process) → <i>f = celsius × 9 ÷ 5 + 32</i> (process) → <i>PRINT f</i> (input/output) → <i>celsius ≥ 30?</i> (decision: Yes → PRINT "Hot!", No → PRINT "Not hot") → STOP</p></div>
+    </div></details>
+    <div class="act" data-act="c-symbols"></div>
+  </section>
+
+  <section class="panel" id="station-d" data-c="d" data-label="D · Pseudocode" data-short="D" role="tabpanel" hidden>
+    <div class="st-head"><div class="badge">D</div><div><span class="eyebrow">Station D · Activity 8</span><h2>Pseudocode</h2></div></div>
+    <details class="info" open><summary>Info Card: read this first</summary><div class="info-body">
+      <div class="box"><h3>What is it?</h3><p><b>Pseudocode</b> writes the steps of a program in simple, code-like English. It is not a real programming language, but it must be clear and in the right order.</p></div>
+      <div class="grid2">
+        <div class="box"><h3>Keywords</h3><ul><li><code>INPUT</code>: get data from the user</li><li><code>PRINT</code>: show a result</li><li><code>IF … THEN</code>: make a decision</li><li><code>ELSE</code>: what happens otherwise</li><li><code>END IF</code>: close the decision</li></ul></div>
+        <div class="box"><h3>Rules</h3><ul><li>Write keywords in CAPITALS.</li><li>One step on each line.</li><li>Indent the lines inside an IF.</li><li>Each line matches one box in the flowchart.</li></ul></div>
+      </div>
+      <div class="box"><h3>Example: temperature converter</h3>
+<pre><span class="kw">START</span>
+<span class="kw">INPUT</span> celsius
+celsius = FLOAT(celsius)
+f = celsius * 9 / 5 + 32
+<span class="kw">PRINT</span> f
+<span class="kw">IF</span> celsius >= 30 <span class="kw">THEN</span>
+    <span class="kw">PRINT</span> "It is hot!"
+<span class="kw">ELSE</span>
+    <span class="kw">PRINT</span> "It is not hot."
+<span class="kw">END IF</span>
+<span class="kw">STOP</span></pre></div>
+    </div></details>
+    <div class="act" data-act="d-order"></div>
+  </section>
+
+  <section class="panel" id="build" data-c="a" data-label="Check your plan" data-short="✓" role="tabpanel" hidden>
+    <div class="st-head"><div class="badge">✓</div><div><span class="eyebrow">Build the plan · Activities 5–8</span><h2>Check your BMI plan</h2></div></div>
+    <p>Use your team’s plan to work out these BMI values by hand, like the computer would. If your answers match, your plan is ready for coding.</p>
+    <div class="box"><h3>Reference</h3><p><code>BMI = weight ÷ (height × height)</code>. Underweight: below 18.5 · Healthy weight: 18.5 to under 25 · Overweight: 25 to under 30 · Obese: 30 and above.</p></div>
+    <div class="act" data-act="build-tests"></div>
+  </section>
+
+  
+
+  <p class="foot">Grade 7 AI &amp; Technology · Unit 4 Lesson 2. Health data is private: never share someone’s BMI.</p>
+</div>
+
+<script>
+const CATS = ['Underweight', 'Healthy weight', 'Overweight', 'Obese'];
+const IPO = ['Input', 'Process', 'Output'];
+const SYM = ['Terminator', 'Input / Output', 'Process', 'Decision'];
+const SDLC = ['Project brief', 'Planning', 'Programming', 'Testing', 'Self-reflection'];
+const bmi = (w, h) => w / (h * h);
+const category = b => b < 18.5 ? 'Underweight' : b < 25 ? 'Healthy weight' : b < 30 ? 'Overweight' : 'Obese';
+const r1 = x => Math.round(x * 10) / 10;
+
+const ACTS = {
+  'starter-q1': { type: 'mcq', title: 'Question 1: the goal', prompt: 'What is the goal of the project?',
+    options: ['To write a program that calculates an adult’s BMI from their weight and height and shows the category',
+              'To build a robot that measures people’s height', 'To make a website that stores everyone’s weight', 'To draw a chart of the class’s heights'], correct: 0,
+    hint: 'think about the project brief from last lesson.',
+    why: 'The BMI calculator takes weight and height, calculates the BMI and shows the result with its category.' },
+  'starter-q2': { type: 'mcq', title: 'Question 2: the inputs', prompt: 'Which inputs does the BMI calculator need from the user?',
+    options: ['Weight (kg) and height (m)', 'Name and age', 'BMI and category', 'Height (cm) only'], correct: 0,
+    hint: 'look at the BMI formula: BMI = weight ÷ (height × height).',
+    why: 'The formula uses weight in kilograms and height in metres, so these are the two inputs.' },
+  'starter-q3': { type: 'mcq', title: 'Question 3: casting', prompt: 'Why must the inputs be cast to float?',
+    options: ['Because input() gives text, and the calculation needs decimal numbers like 1.65', 'Because float makes the program run faster',
+              'Because the BMI must always be a whole number', 'Casting is not needed'], correct: 0,
+    hint: 'what type of data does input() give?',
+    why: 'input() returns a string. float() turns it into a decimal number so the program can calculate with it.' },
+  'starter-q4': { type: 'mcq', title: 'Question 4: variables', prompt: 'What is a variable?',
+    options: ['A named place that stores a value, such as weight', 'A type of flowchart symbol', 'An error in the program', 'A stage of the SDLC'], correct: 0,
+    hint: 'the program needs somewhere to keep the weight and height.',
+    why: 'A variable has a name and stores a value, e.g. weight = 50. The BMI program needs weight, height and bmi.' },
+  'starter-q5': { type: 'mcq', title: 'Question 5: compound conditionals', prompt: 'Which of these is a compound conditional?',
+    options: ['bmi >= 18.5 AND bmi < 25', 'bmi = weight / (height * height)', 'PRINT bmi', 'INPUT weight'], correct: 0,
+    hint: 'a compound conditional joins two conditions with AND, OR or NOT.',
+    why: 'It joins two conditions with AND. The program uses it to decide if the BMI is in the Healthy weight range.' },
+
+  'a-order': { type: 'order', title: 'Order the SDLC', prompt: 'Put the 5 stages of the Systems Development Lifecycle in the correct order.',
+    items: SDLC, why: 'Brief → Planning → Programming → Testing → Self-reflection. You plan before you code, and you test before you reflect.' },
+  'a-match': { type: 'select', title: 'BMI project tracker', prompt: 'Which stage does each BMI task belong to?', choices: SDLC, items: [
+    { text: 'Read the BMI brief and list what the program must do', answer: 'Project brief', why: 'Requirements come from the brief.' },
+    { text: 'Draw the BMI flowchart', answer: 'Planning', why: 'Flowcharts and pseudocode are planning tools.' },
+    { text: 'Type the BMI program in Python', answer: 'Programming', why: 'Writing real code is programming.' },
+    { text: 'Try 50 kg and 1.60 m and check the answer is 19.5', answer: 'Testing', why: 'Using test values to check results is testing.' },
+    { text: 'Decide what your team would improve next time', answer: 'Self-reflection', why: 'Looking back at your work is self-reflection.' }] },
+  'a-why': { type: 'mcq', title: 'Why use a tracker?', prompt: 'What is the main reason a team uses a project tracker?',
+    options: ['To manage time and see which tasks are done and which are left', 'To write the code faster', 'To make the program look nicer'], correct: 0, hint: 'read “What is it?” on the Info Card.',
+    why: 'A tracker shows every task, its owner, its deadline and its status, so the team can manage its time.' },
+  'a-deeper': { type: 'mcq', tag: 'Going deeper', title: 'Which stage runs late?', prompt: 'Which stage of the BMI project most often takes longer than planned?',
+    options: ['Testing, because errors found during testing must be fixed and tested again', 'Project brief, because the brief is long', 'Self-reflection, because it needs a lot of code'], correct: 0, hint: 'look at the Tips box.',
+    why: 'Each error found in testing sends you back to programming, then to testing again. Leave extra time for it.' },
+
+  'b-sort': { type: 'select', title: 'Decompose the BMI calculator', prompt: 'Is each part of the BMI program Input, Process or Output?', choices: IPO, items: [
+    { text: 'Ask the user for their weight in kg', answer: 'Input', why: 'Data typed by the user is input.' },
+    { text: 'Ask the user for their height in m', answer: 'Input', why: 'Data typed by the user is input.' },
+    { text: 'Cast weight and height to float', answer: 'Input', accept: ['Process'], why: 'This prepares the input data for the calculation. Input or Process are both accepted.' },
+    { text: 'Calculate bmi = weight ÷ (height × height)', answer: 'Process', why: 'Calculations are processing.' },
+    { text: 'Decide the BMI category', answer: 'Process', why: 'Decisions are processing.' },
+    { text: 'Print the BMI value', answer: 'Output', why: 'Showing a result is output.' },
+    { text: 'Print the category, e.g. “Healthy weight”', answer: 'Output', why: 'Showing a result is output.' }] },
+  'b-names': { type: 'mcq', title: 'Name the variable', prompt: 'Which is the best variable name for the user’s weight?',
+    options: ['weight_kg', 'w', '2weight', 'my weight'], correct: 0, hint: 'a good name is clear, has no spaces and does not start with a number.',
+    why: 'weight_kg is clear and includes the unit. "w" is unclear, a name cannot start with a number, and a name cannot contain a space.' },
+  'b-deeper': { type: 'select', tag: 'Going deeper', title: 'Split the Process part', prompt: 'Put the Process sub-tasks in the order the program must do them.', choices: ['1st', '2nd', '3rd'], items: [
+    { text: 'Check that height is more than 0', answer: '1st', why: 'Validate first, so the program never divides by zero.' },
+    { text: 'Calculate the BMI', answer: '2nd', why: 'The BMI is needed before you can decide the category.' },
+    { text: 'Decide the BMI category', answer: '3rd', why: 'The category depends on the BMI value.' }] },
+
+  'c-symbols': { type: 'select', title: 'Choose the symbol', prompt: 'Which flowchart symbol does each step of the BMI program use?', choices: SYM, items: [
+    { text: 'START', answer: 'Terminator', why: 'Start and Stop use the rounded terminator.' },
+    { text: 'INPUT weight, height', answer: 'Input / Output', why: 'Getting data from the user uses the parallelogram.' },
+    { text: 'bmi = weight ÷ (height × height)', answer: 'Process', why: 'A calculation uses the rectangle.' },
+    { text: 'bmi ≥ 18.5 AND bmi < 25?', answer: 'Decision', why: 'A Yes/No question uses the diamond.' },
+    { text: 'PRINT "Healthy weight"', answer: 'Input / Output', why: 'Showing a result uses the parallelogram.' },
+    { text: 'STOP', answer: 'Terminator', why: 'Start and Stop use the rounded terminator.' }] },
+  'c-exits': { type: 'mcq', title: 'Decisions', prompt: 'How many arrows leave a decision symbol?',
+    options: ['1', '2 (Yes and No)', '3', 'As many as you like'], correct: 1, hint: 'read the Rules box.',
+    why: 'A decision asks a Yes/No question, so it has exactly two exits, labelled Yes and No.' },
+  'c-deeper': { type: 'mcq', tag: 'Going deeper', title: 'Covering all categories', prompt: 'What is the smallest number of decisions needed to sort a BMI into all four categories?',
+    options: ['1', '2', '3', '4'], correct: 2, hint: 'each decision splits the values into two groups.',
+    why: 'Three decisions: below 18.5? If not, below 25? If not, below 30? If every answer is No, the BMI must be Obese.' },
+
+  'd-order': { type: 'order', title: 'Order the BMI pseudocode', prompt: 'Put the lines of the BMI pseudocode in the correct order.',
+    items: ['START', 'INPUT weight, height', 'weight = FLOAT(weight), height = FLOAT(height)', 'bmi = weight / (height * height)', 'PRINT bmi',
+            'IF bmi >= 18.5 AND bmi < 25 THEN PRINT "Healthy weight" ELSE PRINT "Not in the healthy range" END IF', 'STOP'],
+    why: 'Input first, then cast, then calculate, then output and decide. The pseudocode follows the flowchart from top to bottom.' },
+  'd-keywords': { type: 'select', title: 'Missing keywords', prompt: 'Choose the missing keyword for each line.', choices: ['INPUT', 'PRINT', 'THEN', 'ELSE', 'END IF'], items: [
+    { text: '____ height', answer: 'INPUT', why: 'INPUT gets data from the user.' },
+    { text: '____ bmi', answer: 'PRINT', why: 'PRINT shows a result.' },
+    { text: 'IF bmi < 18.5 ____', answer: 'THEN', why: 'IF … THEN starts a decision.' },
+    { text: '____ (runs when the condition is false)', answer: 'ELSE', why: 'ELSE runs when the condition is false.' },
+    { text: '____ (closes the decision)', answer: 'END IF', why: 'END IF closes the IF block.' }] },
+  'd-deeper': { type: 'mcq', tag: 'Going deeper', title: 'From pseudocode to Python', prompt: 'Which Python keyword matches ELSE IF in pseudocode?',
+    options: ['elif', 'elseif', 'else if:', 'then'], correct: 0, hint: 'Python shortens it to four letters.',
+    why: 'Python uses elif. You will need it next lesson to check all four categories.' },
+
+  'build-tests': { type: 'numeric', title: 'Test values', prompt: 'Work out the BMI (1 decimal place) and choose the category.', rows: [{ w: 50, h: 1.60 }, { w: 80, h: 1.70 }] },
+  'build-own': { type: 'free', title: 'Try your own values', prompt: 'Enter any weight and height. Predict the BMI and category with your plan, then check.' },
+
+  'ch-edges': { type: 'select', tag: 'Advanced', title: 'Boundary values', prompt: 'What should your program print for each case?', choices: CATS.concat(['Invalid input']), items: [
+    { text: 'bmi = 18.5', answer: 'Healthy weight', why: 'Healthy weight starts at 18.5, so 18.5 is included (≥ 18.5).' },
+    { text: 'bmi = 24.99', answer: 'Healthy weight', why: '24.99 is still under 25.' },
+    { text: 'bmi = 25.0', answer: 'Overweight', why: 'Healthy weight is under 25, so exactly 25.0 is Overweight.' },
+    { text: 'bmi = 30.0', answer: 'Obese', why: 'Obese is 30 and above.' },
+    { text: 'height = 0', answer: 'Invalid input', why: 'You cannot divide by zero. Validate the input before calculating.' }] },
+  'ch-and': { type: 'mcq', tag: 'Advanced', title: 'AND or OR?', prompt: 'Why does the Healthy weight check use AND, not OR?',
+    options: ['With OR, "bmi >= 18.5 OR bmi < 25" is true for every number, so everyone would be "Healthy"', 'OR is not allowed in pseudocode', 'AND makes the program faster'], correct: 0, hint: 'test the OR version with bmi = 40.',
+    why: 'AND needs both parts to be true, so only values from 18.5 up to (but not including) 25 pass.' },
+  'ch-cond': { type: 'mcq', tag: 'Advanced', title: 'Write the condition', prompt: 'Which condition is correct for Overweight?',
+    options: ['bmi >= 25 AND bmi < 30', 'bmi > 25 AND bmi <= 30', 'bmi >= 25 OR bmi < 30', 'bmi < 25 AND bmi >= 30'], correct: 0, hint: 'Overweight includes 25 but not 30.',
+    why: 'Overweight is 25 to under 30: include 25 (>=) and exclude 30 (<).' },
+};
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  kids.flat().forEach(c => n.append(c));
+  return n;
+};
+const shuffled = arr => { let a; do { a = arr.map(x => [Math.random(), x]).sort((p, q) => p[0] - q[0]).map(p => p[1]); } while (arr.length > 1 && a.every((x, i) => x === arr[i])); return a; };
+
+const done = new Set();
+function frame(box, d) {
+  box.replaceChildren(); box.classList.remove('all-good');
+  box.append(el('div', { class: 'act-head' }, d.tag ? el('span', { class: 'tag' }, d.tag) : '', el('h3', {}, d.title), el('p', {}, d.prompt)));
+  const body = el('div', { class: 'act-body' }), fb = el('div', { 'aria-live': 'polite' }), result = el('span', { class: 'result', 'aria-live': 'polite' });
+  const check = el('button', { class: 'btn', type: 'button' }, 'Check');
+  const retry = el('button', { class: 'btn ghost', type: 'button', hidden: '' }, 'Try again');
+  const reveal = el('button', { class: 'btn ghost', type: 'button', hidden: '' }, 'Show the answers');
+  box.append(body, el('div', { class: 'actions' }, check, retry, reveal, result), fb);
+  return { body, fb, result, check, reveal, retry };
+}
+function score(box, id, right, total, f, msgGood, msgBad) {
+  const good = right === total;
+  f.result.textContent = good ? (total > 1 ? `All ${total} correct!` : 'Correct!') : (total > 1 ? `${right} of ${total} correct` : 'Not yet');
+  f.result.className = 'result ' + (good ? 'good' : 'bad');
+  box.classList.toggle('all-good', good);
+  f.reveal.hidden = good; f.retry.hidden = good;
+  f.fb.replaceChildren(el('div', { class: 'feedback ' + (good ? 'good' : 'bad') },
+    el('b', {}, good ? 'Well done.' : 'Read the feedback, then try again.'), (good ? msgGood : msgBad) ? el('p', {}, good ? msgGood : msgBad) : ''));
+  if (good) done.add(id);
+  updateNav();
+}
+function showAnswers(f) { f.reveal.hidden = true; f.retry.hidden = true; f.result.textContent = 'Answers shown'; f.result.className = 'result'; }
+
+const R = {
+  mcq(box, d, id) {
+    const f = frame(box, d), name = 'q-' + id;
+    const opts = d.options.map((o, i) => el('label', { class: 'opt', for: `${name}-${i}` }, el('input', { type: 'radio', name, value: String(i), id: `${name}-${i}` }), el('span', {}, o)));
+    // shown in a shuffled order; opts[i] still belongs to d.options[i], so marking is unchanged
+    f.body.append(el('div', { class: 'opts', role: 'radiogroup' }, shuffled(opts.map((_, i) => i)).map(i => opts[i])));
+    f.check.addEventListener('click', () => {
+      const sel = box.querySelector(`input[name="${name}"]:checked`);
+      opts.forEach(o => o.classList.remove('ok', 'no'));
+      if (!sel) { f.result.textContent = 'Choose an answer first.'; f.result.className = 'result bad'; return; }
+      const i = +sel.value, ok = i === d.correct; opts[i].classList.add(ok ? 'ok' : 'no');
+      score(box, id, ok ? 1 : 0, 1, f, d.why, 'Hint: ' + (d.hint || 'read the Info Card again.'));
+    });
+    f.retry.addEventListener('click', () => R.mcq(box, d, id));
+    f.reveal.addEventListener('click', () => { opts.forEach((o, i) => { o.classList.remove('ok', 'no'); if (i === d.correct) o.classList.add('ok'); });
+      f.fb.replaceChildren(el('div', { class: 'feedback good' }, el('b', {}, 'Answer: ' + d.options[d.correct]), el('p', {}, d.why))); showAnswers(f); });
+  },
+  select(box, d, id) {
+    const f = frame(box, d);
+    const rows = d.items.map((it, i) => {
+      const s = el('select', { id: `s-${id}-${i}`, 'aria-label': it.text }, el('option', { value: '' }, 'Choose…'), d.choices.map(c => el('option', { value: c }, c)));
+      return { it, s, row: el('div', { class: 'row' }, el('span', {}, it.text), s) };
+    });
+    f.body.append(el('div', { class: 'rows' }, rows.map(r => r.row)));
+    const mark = all => { let right = 0;
+      rows.forEach(({ it, s, row }) => {
+        row.querySelector('.why')?.remove(); row.classList.remove('ok', 'no');
+        if (all) s.value = it.answer;
+        const ok = s.value === it.answer || (it.accept || []).includes(s.value); if (ok) right++;
+        row.classList.add(ok ? 'ok' : 'no');
+        row.append(el('span', { class: 'why' }, el('span', { class: 'mark' }, ok ? '✓ ' : '✗ '),
+          ok || all ? it.why : (s.value ? `Not “${s.value}”. ` : 'No answer yet. ') + 'Check the Info Card and try again.'));
+      }); return right; };
+    f.check.addEventListener('click', () => score(box, id, mark(false), rows.length, f));
+    f.retry.addEventListener('click', () => { rows.forEach(({ s, row }) => { row.querySelector('.why')?.remove(); if (row.classList.contains('no')) s.value = ''; row.classList.remove('ok', 'no'); });
+      f.retry.hidden = true; f.reveal.hidden = true; f.fb.replaceChildren(); f.result.textContent = ''; });
+    f.reveal.addEventListener('click', () => { mark(true); showAnswers(f); });
+  },
+  order(box, d, id) {
+    const f = frame(box, d); let cur = shuffled(d.items); const list = el('ol', { class: 'ord' });
+    const move = (i, j) => { [cur[i], cur[j]] = [cur[j], cur[i]]; draw(); f.result.textContent = ''; };
+    const draw = marks => list.replaceChildren(...cur.map((t, i) => el('li', { class: marks ? (t === d.items[i] ? 'ok' : 'no') : '' },
+      el('span', { class: 'num' }, String(i + 1)), el('span', { class: 'txt' }, t),
+      el('button', { type: 'button', 'aria-label': `Move up: ${t}`, ...(i === 0 ? { disabled: '' } : {}), onclick: () => move(i, i - 1) }, '↑'),
+      el('button', { type: 'button', 'aria-label': `Move down: ${t}`, ...(i === cur.length - 1 ? { disabled: '' } : {}), onclick: () => move(i, i + 1) }, '↓'))));
+    draw(); f.body.append(list);
+    f.check.addEventListener('click', () => { draw(true); const right = cur.filter((t, i) => t === d.items[i]).length;
+      score(box, id, right, cur.length, f, d.why, 'Green lines are in the right place. Move the red lines and press Check again.'); f.retry.hidden = true; });
+    f.reveal.addEventListener('click', () => { cur = [...d.items]; draw(true); f.fb.replaceChildren(el('div', { class: 'feedback good' }, el('b', {}, 'Correct order shown.'), el('p', {}, d.why))); showAnswers(f); });
+  },
+  lines(box, d, id) {
+    const f = frame(box, d);
+    const btns = d.code.map((c, i) => el('button', { class: 'codeline', type: 'button', 'aria-pressed': 'false',
+      onclick: e => { const b = e.currentTarget; b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); } }, el('span', { class: 'ln' }, String(i + 1)), c));
+    const whys = el('div', { class: 'rows' });
+    f.body.append(el('div', { class: 'code' }, btns), whys);
+    const mark = all => { let right = 0; whys.replaceChildren();
+      btns.forEach((b, i) => { if (all) b.setAttribute('aria-pressed', d.correct.includes(i) ? 'true' : 'false');
+        const picked = b.getAttribute('aria-pressed') === 'true', ok = picked === d.correct.includes(i); if (ok) right++;
+        whys.append(el('div', { class: 'row ' + (ok ? 'ok' : 'no') }, el('span', { class: 'why' }, el('span', { class: 'mark' }, ok ? '✓ ' : '✗ '), `Line ${i + 1}: `,
+          ok || all ? d.why[i] : picked ? 'This line is fine. Tap it again to unselect it.' : 'There is an error on this line. Look again.'))); });
+      return right; };
+    f.check.addEventListener('click', () => score(box, id, mark(false), btns.length, f));
+    f.retry.addEventListener('click', () => { whys.replaceChildren(); f.retry.hidden = true; f.reveal.hidden = true; f.fb.replaceChildren(); f.result.textContent = ''; });
+    f.reveal.addEventListener('click', () => { mark(true); showAnswers(f); });
+  },
+  numeric(box, d, id) {
+    const f = frame(box, d);
+    const rows = d.rows.map((r, i) => {
+      const n = el('input', { type: 'number', step: '0.1', id: `n-${id}-${i}`, placeholder: 'BMI', 'aria-label': `BMI for ${r.w} kg and ${r.h} m` });
+      const s = el('select', { id: `c-${id}-${i}`, 'aria-label': `Category for ${r.w} kg and ${r.h} m` }, el('option', { value: '' }, 'Category…'), CATS.map(c => el('option', { value: c }, c)));
+      return { r, n, s, row: el('div', { class: 'row' }, el('b', {}, `${r.w} kg, ${r.h.toFixed(2)} m`), el('span', { class: 'calc-row' }, n, s)) };
+    });
+    f.body.append(el('div', { class: 'rows' }, rows.map(x => x.row)));
+    const mark = all => { let right = 0;
+      rows.forEach(({ r, n, s, row }) => { const b = bmi(r.w, r.h), cat = category(b), sq = r.h * r.h;
+        if (all) { n.value = r1(b); s.value = cat; }
+        const okN = Math.abs(parseFloat(n.value) - b) <= 0.11, okC = s.value === cat, ok = okN && okC; if (ok) right++;
+        row.querySelector('.why')?.remove(); row.classList.remove('ok', 'no'); row.classList.add(ok ? 'ok' : 'no');
+        const work = `${r.h.toFixed(2)} × ${r.h.toFixed(2)} = ${+sq.toFixed(4)}, then ${r.w} ÷ ${+sq.toFixed(4)} = ${r1(b)} → ${cat}.`;
+        row.append(el('span', { class: 'why' }, el('span', { class: 'mark' }, ok ? '✓ ' : '✗ '),
+          ok || all ? work : !okN ? 'Check the BMI: square the height first (brackets!), then divide the weight by it.' : 'The BMI is right. Now check the category ranges.')); });
+      return right; };
+    f.check.addEventListener('click', () => score(box, id, mark(false), rows.length, f, 'Your plan gives the right answers. It is ready to code next lesson.'));
+    f.retry.addEventListener('click', () => { rows.forEach(({ row }) => { row.querySelector('.why')?.remove(); row.classList.remove('ok', 'no'); }); f.retry.hidden = true; f.reveal.hidden = true; f.fb.replaceChildren(); f.result.textContent = ''; });
+    f.reveal.addEventListener('click', () => { mark(true); showAnswers(f); });
+  },
+  free(box, d, id) {
+    const f = frame(box, d);
+    const w = el('input', { type: 'number', step: '0.1', id: `fw-${id}`, value: '60' }), h = el('input', { type: 'number', step: '0.01', id: `fh-${id}`, value: '1.65' });
+    const n = el('input', { type: 'number', step: '0.1', id: `fb-${id}` });
+    const s = el('select', { id: `fc-${id}` }, el('option', { value: '' }, 'Category…'), CATS.concat(['Invalid input']).map(c => el('option', { value: c }, c)));
+    f.body.append(el('div', { class: 'calc-row' }, el('label', { for: w.id }, 'Weight (kg)', w), el('label', { for: h.id }, 'Height (m)', h), el('label', { for: n.id }, 'Your BMI', n), el('label', { for: s.id }, 'Your category', s)));
+    f.check.addEventListener('click', () => {
+      const W = parseFloat(w.value), H = parseFloat(h.value); let ok, msg;
+      if (!(W > 0) || !(H > 0)) { ok = s.value === 'Invalid input'; msg = 'Weight and height must both be more than 0, so the program should print “Invalid input” instead of calculating.'; }
+      else { const b = bmi(W, H), cat = category(b), okN = Math.abs(parseFloat(n.value) - b) <= 0.11, okC = s.value === cat; ok = okN && okC;
+        msg = ok ? `Yes: ${W} ÷ (${H} × ${H}) = ${r1(b)} → ${cat}.` : !okN ? 'Your BMI is not right yet. Square the height first, then divide the weight by it.' : `BMI correct (${r1(b)}), but the category should be ${cat}.`; }
+      f.result.textContent = ok ? 'Correct!' : 'Not yet'; f.result.className = 'result ' + (ok ? 'good' : 'bad');
+      f.fb.replaceChildren(el('div', { class: 'feedback ' + (ok ? 'good' : 'bad') }, el('p', {}, msg)));
+    });
+    f.retry.remove(); f.reveal.remove();
+  },
+};
+
+const panels = [...document.querySelectorAll('.panel')];
+const nav = document.getElementById('stages');
+const tabs = panels.map(p => { const b = el('button', { type: 'button', role: 'tab', id: 'tab-' + p.id, 'aria-controls': p.id, 'aria-selected': 'false', onclick: () => show(p.id, true) },
+  el('span', { class: 'dot', style: `background: var(--${p.dataset.c})` }, p.dataset.short), p.dataset.label); nav.append(b); return b; });
+function updateNav() { panels.forEach((p, i) => { const ids = [...p.querySelectorAll('.act')].map(a => a.dataset.act).filter(k => ACTS[k].type !== 'free');
+  tabs[i].classList.toggle('done', ids.length > 0 && ids.every(k => done.has(k))); }); }
+function show(id, user) {
+  if (!panels.some(p => p.id === id)) id = 'starter';
+  panels.forEach((p, i) => { p.hidden = p.id !== id; tabs[i].setAttribute('aria-selected', String(p.id === id)); });
+  if (user) { try { history.replaceState(null, '', '#' + id); } catch (e) {} window.scrollTo({ top: 0 }); }
+}
+panels.forEach((p, i) => { const nxt = panels[i + 1];
+  if (nxt) p.append(el('button', { class: 'btn next', type: 'button', onclick: () => show(nxt.id, true) }, `Next: ${nxt.dataset.label} →`)); });
+document.querySelectorAll('.act').forEach(box => { const id = box.dataset.act; R[ACTS[id].type](box, ACTS[id], id); });
+show((location.hash || '').slice(1));
+window.addEventListener('hashchange', () => show(location.hash.slice(1)));
+</script>
+
+</html>
